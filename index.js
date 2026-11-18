@@ -11,7 +11,7 @@ import { spawn } from 'node:child_process'
 import path from 'node:path'
 import { createBuildLoop } from './loop.js'
 
-export const name = 'serial-monitor'
+export const name = 'serial-keil'
 
 /** Route prefix owned by this plugin; the client half asks for the same paths. */
 const ROUTE = '/plugin-serial-monitor'
@@ -932,3 +932,4 @@ export function apply(ctx, config) {
     }, 'serial-monitor: tools')
   })
 }
+

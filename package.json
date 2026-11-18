@@ -1,9 +1,26 @@
 {
-  "name": "@local/dsh-serial-monitor",
+  "name": "dsh-serial-keil",
   "version": "0.1.0",
   "private": true,
-  "description": "Read serial-port output on the host and mirror it into the right sidebar with a port picker.",
+  "description": "Serial assistant and Keil build/flash loop for DeepSeek Harness: ASCII/HEX log, send box, and watch → build → download → read-back with a guard on the project the Keil IDE has open.",
   "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fanxx-lab/dsh-serial-keil.git"
+  },
+  "homepage": "https://github.com/fanxx-lab/dsh-serial-keil#readme",
+  "bugs": {
+    "url": "https://github.com/fanxx-lab/dsh-serial-keil/issues"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "keil",
+    "serial-port",
+    "embedded"
+  ],
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
@@ -17,6 +34,7 @@
     "cordis.patch.yml",
     "locale/*.json",
     "README.md",
+    "LICENSE",
     "icon.svg"
   ],
   "dsh": {

@@ -93,7 +93,7 @@ profile patch (a matching row replaces the whole `config`):
 
 ```yaml
 - id: serial-monitor
-  name: "@local/dsh-serial-monitor"
+  name: "dsh-serial-keil"
   config:
     project: 'C:\work\demo\MDK-ARM\demo.uvprojx'
     uv4: 'C:\Keil_v5\UV4\UV4.exe'
@@ -129,3 +129,4 @@ The loop can also be switched on or off from the panel and by the
   bytes).
 - Automatic rounds flash the board after every settled edit. Turn the automatic
   switch off while you are only reading code.
+

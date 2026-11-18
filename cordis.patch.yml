@@ -2,6 +2,8 @@
 # right-sidebar live log with a port picker. The `config` mapping is empty on
 # purpose: baud rate is chosen per port in the panel, not in the profile.
 - insert:
-    - id: serial-monitor
-      name: '@local/dsh-serial-monitor'
+    - id: serial-keil
+      name: 'dsh-serial-keil'
       config: {}
+
+

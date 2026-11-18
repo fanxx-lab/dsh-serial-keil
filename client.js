@@ -7,7 +7,7 @@
  * tool always show the same lines.
  */
 window.__ModuleLoader__.load({
-  id: '@local/dsh-serial-monitor',
+  id: 'dsh-serial-keil',
   factory(require) {
     const React = require('react')
     const h = React.createElement
@@ -17,7 +17,7 @@ window.__ModuleLoader__.load({
     /** Left-sidebar panel id; the `main` slot registers the same key. */
     const PANEL_ID = 'serial-monitor'
     /** Tab implementation identity, unique across tab types. */
-    const TAB_ID = '@local/dsh-serial-monitor/tab'
+    const TAB_ID = 'dsh-serial-keil/tab'
     /** Tab kind the guide card and `openTab` name. */
     const TAB_KIND = 'serial-monitor'
     /** Kind an earlier version registered as a second tab; saved layouts may still hold one. */
@@ -1379,3 +1379,5 @@ window.__ModuleLoader__.load({
     }
   },
 })
+
+

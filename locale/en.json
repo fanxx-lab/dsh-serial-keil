@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Serial monitor",
+    "description": "One plugin that reads and writes a serial port and runs a Keil build loop in the same right-sidebar tab. The tab holds the live log with an ASCII/HEX switch and a send box (text or hex, CR/LF/CRLF ending), a status strip with auto download, Build, and Download, and a Settings toggle that unfolds the project picker, automatic rounds, follow switch, Keil / debugger / probe / connection rows, build log, and round history. The left sidebar entry carries the same build block with more room. Received and sent lines are mirrored live; saved sources are built with UV4, the build log decides success, a passing build is downloaded, and the configured port is read again. The plugin detects the project the Keil IDE has open, follows it or blocks a mismatched download, and reports the configured debugger, the plugged-in probe, and the last download result. The agent shares the same reader and loop through the serial_monitor and build_flash tools."
+  }
+}

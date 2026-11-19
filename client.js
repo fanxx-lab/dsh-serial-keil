@@ -26,7 +26,9 @@ window.__ModuleLoader__.load({
     const ROUTE = '/plugin-serial-monitor'
     const DEFAULT_BAUD = 115200
     const BAUD_CHOICES = [9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600]
-    const MAX_LINES = 2000
+    const MAX_LINES = 1000
+    /** Rows the tab draws; older lines stay buffered for the agent and the next render. */
+    const RENDER_LINES = 400
     /** A stream with no frame for this long is treated as dead and reopened; the Host pings every 20s. */
     const IDLE_TIMEOUT_MS = 45000
     const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace'
@@ -280,6 +282,13 @@ window.__ModuleLoader__.load({
       const flush = () => {
         flushTimer = null
         if (pending.length === 0) return
+        // A hidden page keeps buffering nothing but the newest lines and skips React work;
+        // the timer still runs so a return to the tab applies what arrived meanwhile.
+        if (typeof document !== 'undefined' && document.hidden === true) {
+          if (pending.length > MAX_LINES) pending.splice(0, pending.length - MAX_LINES)
+          flushTimer = setTimeout(flush, 500)
+          return
+        }
         const monitors = { ...snapshot.monitors }
         for (const entry of pending) {
           const monitor = monitors[entry.key] ?? {
@@ -297,7 +306,8 @@ window.__ModuleLoader__.load({
       }
       const queueLine = (port, line) => {
         pending.push({ key: keyOf(port), port, line })
-        if (flushTimer === null) flushTimer = setTimeout(flush, 40)
+        if (pending.length > MAX_LINES * 2) pending.splice(0, pending.length - MAX_LINES * 2)
+        if (flushTimer === null) flushTimer = setTimeout(flush, 80)
       }
 
       /** Every port the UI can offer: detected first, then monitored extras. */
@@ -1176,15 +1186,16 @@ window.__ModuleLoader__.load({
                 : live ? t('waitingHint') : t('notMonitoringHint')),
         )
         : h('div', { className: 'dshsm-log-body', ref: logRef },
-          lines.map(line => h('div', { className: `dshsm-line${line.dir === 'tx' ? ' dshsm-line-tx' : ''}`, key: String(line.seq) },
-            h('span', { className: 'dshsm-seq' }, String(line.seq)),
-            h('span', { className: 'dshsm-time' }, formatTime(line.at)),
-            h('span', { className: 'dshsm-mark' }, line.dir === 'tx' ? '→' : ''),
-            h('span', { className: 'dshsm-text' },
-              display === 'hex'
-                ? (line.hex ?? '')
-                : (trimmedOf(line.text).length === 0 ? ' ' : trimmedOf(line.text))),
-          )),
+          (lines.length > RENDER_LINES ? lines.slice(lines.length - RENDER_LINES) : lines)
+            .map(line => h('div', { className: `dshsm-line${line.dir === 'tx' ? ' dshsm-line-tx' : ''}`, key: String(line.seq) },
+              h('span', { className: 'dshsm-seq' }, String(line.seq)),
+              h('span', { className: 'dshsm-time' }, formatTime(line.at)),
+              h('span', { className: 'dshsm-mark' }, line.dir === 'tx' ? '→' : ''),
+              h('span', { className: 'dshsm-text' },
+                display === 'hex'
+                  ? (line.hex ?? '')
+                  : (trimmedOf(line.text).length === 0 ? ' ' : trimmedOf(line.text))),
+            )),
         )
 
       return h('div', { className: 'dshsm-root' },
@@ -1358,7 +1369,6 @@ window.__ModuleLoader__.load({
         ctx.effect(() => ctx.sidebarRightTabs.register({
           id: TAB_ID,
           kind: TAB_KIND,
-          keepMounted: true,
           title: () => t('tabTitle'),
           guide: [{
             id: 'serial-monitor',

@@ -117,6 +117,26 @@ profile patch (a matching row replaces the whole `config`):
 The loop can also be switched on or off from the panel and by the
 `build_flash` tool.
 
+## Resource use
+
+The plugin is bounded on both sides of the page:
+
+- **Host** — each monitored port keeps at most 1000 lines (text + hex), the
+  monitor roster is pruned to 8 entries, the build history keeps 8 rounds, and an
+  SSE subscriber that stops reading has its line frames dropped once 2 MiB is
+  buffered instead of growing the Host heap. `GET /plugin-serial-monitor/state`
+  reports `runtime` (`rssMB`, `heapUsedMB`, `monitors`, `bufferedLines`,
+  `subscribers`, `streams`) so plugin memory is distinguishable from the rest of
+  the process.
+- **Page** — the tab draws the newest 400 lines of the buffer, stops React work
+  while the page is hidden (it still buffers at most 1000 lines), and the tab is
+  not kept mounted when hidden. Build rounds spawn `UV4.exe` for the build and
+  again for the download, and a fresh PowerShell reader replaces the old one
+  after a download; those child processes are transient.
+
+A very long automation still grows the page's own transcript, which is outside
+this plugin; reload the window to release it.
+
 ## Limits
 
 - Windows only; a machine without PowerShell or Keil reports the failure in the

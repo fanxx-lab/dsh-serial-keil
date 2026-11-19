@@ -214,15 +214,30 @@ class SerialHub {
       seq: monitor.seq,
       buffered: monitor.lines.length,
     }
-    if (withLines === true) view.lines = monitor.lines.slice(-500)
+    if (withLines === true) view.lines = monitor.lines.slice(-200)
     return view
   }
 
-  /** Every monitor plus the detected port list, for a fresh subscriber. */
+  /** Snapshot every monitor plus the detected port list, for a fresh subscriber. */
   snapshot(withLines) {
     return {
       ports: this.ports,
       monitors: [...this.monitors.values()].map(monitor => this.view(monitor, withLines)),
+    }
+  }
+
+  /** Host-side footprint, so a client can tell plugin memory from the rest of the process. */
+  runtime() {
+    const memory = process.memoryUsage()
+    let buffered = 0
+    for (const monitor of this.monitors.values()) buffered += monitor.lines.length
+    return {
+      rssMB: Math.round(memory.rss / 1048576),
+      heapUsedMB: Math.round(memory.heapUsed / 1048576),
+      monitors: this.monitors.size,
+      bufferedLines: buffered,
+      subscribers: this.listeners.size,
+      streams: this.streams.size,
     }
   }
 
@@ -279,6 +294,7 @@ class SerialHub {
     }
     const shell = await this.resolveShell()
     this.monitors.delete(key)
+    this.prune()
     const monitor = {
       key,
       port: cleanPort,
@@ -575,6 +591,8 @@ function openStream(res, hub, loop) {
   })
   if (res.socket !== null && typeof res.socket.setNoDelay === 'function') res.socket.setNoDelay(true)
   const write = (event) => {
+    // A page that stops reading must never make the Host buffer without bound: drop lines first.
+    if (event.type === 'line' && res.writableLength > 2 * 1024 * 1024) return
     try { res.write(`data: ${JSON.stringify(event)}\n\n`) } catch { /* the connection is gone */ }
   }
   write({ type: 'init', ...hub.snapshot(true), loop: loop.view() })
@@ -617,7 +635,7 @@ async function handleRequest(req, res, hub, loop) {
     return
   }
   if (method === 'GET' && action === '/state') {
-    sendJson(res, 200, { ...hub.snapshot(true), defaultBaud: DEFAULT_BAUD, loop: loop.view() })
+    sendJson(res, 200, { ...hub.snapshot(true), defaultBaud: DEFAULT_BAUD, loop: loop.view(), runtime: hub.runtime() })
     return
   }
   if (method === 'GET' && action === '/ports') {

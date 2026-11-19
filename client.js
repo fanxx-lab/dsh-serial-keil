@@ -492,6 +492,13 @@ window.__ModuleLoader__.load({
           const value = await response.json()
           apply({ type: 'init', ports: value.ports ?? [], monitors: value.monitors ?? [] })
         }).catch(() => { /* the stream carries the same snapshot */ })
+        // Detected ports are a Host-side snapshot: ask once per connection instead of waiting for a click.
+        fetcher(`${ROUTE}/ports`, { method: 'GET' }).then(async (response) => {
+          if (!response.ok) return
+          const value = await response.json()
+          const next = { ...snapshot, ports: value.ports ?? [] }
+          publish({ ...next, selected: pickDefault(next) })
+        }).catch(() => { /* the stream's init carries the list once the Host scans */ })
         run()
         return () => {
           controller.abort()

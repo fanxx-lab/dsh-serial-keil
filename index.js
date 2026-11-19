@@ -597,6 +597,8 @@ function openStream(res, hub, loop) {
   }
   write({ type: 'init', ...hub.snapshot(true), loop: loop.view() })
   const unsubscribe = hub.subscribe(write)
+  // A fresh page also refreshes the detected ports, so a restarted Host fills the picker by itself.
+  void hub.scanPorts(true).catch(() => { /* a machine without PowerShell reports it in the panel */ })
   const beat = setInterval(() => {
     try { res.write(': ping\n\n') } catch { /* the connection is gone */ }
   }, 20000)
